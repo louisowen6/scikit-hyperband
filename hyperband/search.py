@@ -10,6 +10,7 @@ Changes made:
 - remove `iid` parameter
 - remove `self.multimetric_`, set refit_metric = 'score' as default
 - remove positional argument for super().fit(X, y=y, groups=groups, **fit_params)
+- raise issue if resource is part of the param_distributions
 ---------------------------------------------------------------------------
 
 =========
@@ -474,3 +475,10 @@ class HyperbandSearchCV(BaseSearchCV):
                              'does not have a parameter with that name' %
                              (self.resource_param,
                               self.estimator.__class__.__name__))
+
+        if any(self.resource_param in candidate for candidate in self.param_distributions):
+            # Can only check this now since we need the candidates list
+            raise ValueError(
+                f"Cannot use parameter {self.resource_param} as the resource since "
+                "it is part of the searched parameters."
+            )
