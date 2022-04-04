@@ -1,4 +1,17 @@
 """
+---------------------------------------------------------------------------
+This is a forked version on https://github.com/louisowen6/scikit-hyperband
+from the original repo https://github.com/thuijskens/scikit-hyperband.
+
+Several minor changes is made to make this repo compatible with the newer
+version of Scikit-learn (version 1.0.1 or above).
+
+Changes made:
+- remove `iid` parameter
+- remove `self.multimetric_`, set refit_metric = 'score' as default
+- remove positional argument for super().fit(X, y=y, groups=groups, **fit_params)
+---------------------------------------------------------------------------
+
 =========
 Hyperband
 =========
@@ -126,11 +139,6 @@ class HyperbandSearchCV(BaseSearchCV):
 
             - A string, giving an expression as a function of n_jobs,
               as in '2*n_jobs'
-
-    iid : boolean, default=True
-        If True, the data is assumed to be identically distributed across
-        the folds, and the loss minimized is the total loss per sample,
-        and not the mean loss across the folds.
 
     cv : int, cross-validation generator or an iterable, optional
         Determines the cross-validation splitting strategy.
@@ -323,7 +331,7 @@ class HyperbandSearchCV(BaseSearchCV):
     def __init__(self, estimator, param_distributions,
                  resource_param='n_estimators', eta=3, min_iter=1,
                  max_iter=81, skip_last=0, scoring=None, n_jobs=1,
-                 iid=True, refit=True, cv=None,
+                 refit=True, cv=None,
                  verbose=0, pre_dispatch='2*n_jobs', random_state=None,
                  error_score='raise', return_train_score=False):
         self.param_distributions = param_distributions
@@ -336,7 +344,7 @@ class HyperbandSearchCV(BaseSearchCV):
 
         super(HyperbandSearchCV, self).__init__(
             estimator=estimator, scoring=scoring, n_jobs=n_jobs,
-            iid=iid, refit=refit, cv=cv, verbose=verbose,
+            refit=refit, cv=cv, verbose=verbose,
             pre_dispatch=pre_dispatch, error_score=error_score,
             return_train_score=return_train_score)
 
@@ -346,7 +354,7 @@ class HyperbandSearchCV(BaseSearchCV):
         s_max = int(np.floor(np.log(self.max_iter / self.min_iter) / np.log(self.eta)))
         B = (s_max + 1) * self.max_iter
 
-        refit_metric = self.refit if self.multimetric_ else 'score'
+        refit_metric = 'score'
         random_state = check_random_state(self.random_state)
 
         if self.skip_last > s_max:
@@ -422,7 +430,7 @@ class HyperbandSearchCV(BaseSearchCV):
         **fit_params : dict of string -> object
             Parameters passed to the ``fit`` method of the estimator
         """
-        super().fit(X, y, groups, **fit_params)
+        super().fit(X, y=y, groups=groups, **fit_params)
 
         s_max = int(np.floor(np.log(self.max_iter / self.min_iter) / np.log(self.eta)))
         B = (s_max + 1) * self.max_iter
